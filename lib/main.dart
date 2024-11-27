@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:came/Class/image_sharpness_calculate.dart';
 import 'package:came/view/image_picker_view.dart';
+import 'package:came/view/live_id_card_detection_view.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
@@ -64,6 +65,10 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
     }
   }
 
+  void _goToCardDetect() {
+    Get.to(IDCardDetectionPage());
+  }
+
   Future<void> _captureImage() async {
     try {
       final image = await _cameraController.takePicture();
@@ -121,12 +126,23 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
             )
           else
             Center(child: CircularProgressIndicator()),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _switchCamera,
-              child: Text("Switch Camera"),
-            ),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: _switchCamera,
+                  child: Text("Switch Camera"),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: _goToCardDetect,
+                  child: Text("Go to Detect Card"),
+                ),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
