@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:came/Class/image_sharpness_calculate.dart';
 import 'package:came/view/image_picker_view.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -75,6 +76,7 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
   }
 
   Future<void> _captureImageContinuously() async {
+    ImageSharpnessCalculate imageSharpnessCalculate = ImageSharpnessCalculate();
     _captureCount = 0;
     _capturedImages.clear();
 
@@ -85,6 +87,9 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
         setState(() {
           _capturedImages.add(File(image.path));
 
+          File pickedImage = File(image.path);
+
+          // imageSharpnessCalculate.showSharpness(pickedImage.path);
           _captureCount++;
         });
         await Future.delayed(
