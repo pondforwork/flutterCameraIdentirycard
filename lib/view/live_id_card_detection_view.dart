@@ -16,6 +16,7 @@ class _IDCardDetectionPageState extends State<IDCardDetectionPage> {
   String _detectionResult = "กำลังตรวจจับ..."; // Default: Detecting
   Timer? _detectionTimer;
   late ObjectDetector _objectDetector;
+  List<DetectedObject> _detectedObjects = [];
 
   @override
   void initState() {
@@ -70,11 +71,12 @@ class _IDCardDetectionPageState extends State<IDCardDetectionPage> {
         // Detect objects in the image
         final objects = await _objectDetector.processImage(inputImage);
 
-        // Check if an ID card is detected
-        bool hasIDCard = objects.any((object) => _isIDCard(object));
-
+        // Update detected objects and check if ID card is present
         setState(() {
-          _detectionResult = hasIDCard ? "พบบัตรประชาชน" : "ไม่พบบัตรประชาชน";
+          _detectedObjects = objects;
+          _detectionResult = objects.any((object) => _isIDCard(object))
+              ? "พบบัตรประชาชน"
+              : "ไม่พบบัตรประชาชน";
         });
       } catch (e) {
         print("Error during detection: $e");
@@ -85,9 +87,39 @@ class _IDCardDetectionPageState extends State<IDCardDetectionPage> {
   }
 
   bool _isIDCard(DetectedObject object) {
-    // Define logic to check if the object is an ID card
-    // Example: Check object labels or bounding box size
-    return object.boundingBox.width > 100 && object.boundingBox.height > 50;
+    // Logic to check if object is an ID card
+    const double minWidth = 100;
+    const double minHeight = 50;
+    // const double minAspectRatio = 1.5;
+    // const double maxAspectRatio = 2.5;
+
+    // final boundingBox = object.boundingBox;
+    // final double width = boundingBox.width;
+    // final double height = boundingBox.height;
+    // final double aspectRatio = width / height;
+
+    // if (width < minWidth || height < minHeight) return false;
+    // if (aspectRatio < minAspectRatio || aspectRatio > maxAspectRatio)
+    //   return false;
+    return true;
+  }
+
+  List<Widget> _buildBoundingBoxes() {
+    return _detectedObjects.map((object) {
+      final boundingBox = object.boundingBox;
+      return Positioned(
+        left: boundingBox.left,
+        top: boundingBox.top,
+        width: boundingBox.width,
+        height: boundingBox.height,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.red, width: 2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+      );
+    }).toList();
   }
 
   @override
@@ -102,19 +134,21 @@ class _IDCardDetectionPageState extends State<IDCardDetectionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("ตรวจจับบัตรประชาชน")),
-      body: Column(
+      body: Stack(
         children: [
           if (_isCameraInitialized)
-            Expanded(
-              child: CameraPreview(_cameraController),
-            )
+            CameraPreview(_cameraController)
           else
             Center(child: CircularProgressIndicator()),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              _detectionResult,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          if (_isCameraInitialized) ..._buildBoundingBoxes(),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                _detectionResult,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
