@@ -1,6 +1,6 @@
 name: came
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   camera: ^0.11.0+2
+  image_picker: ^1.1.2
+  image: ^4.3.0
+  get: ^4.6.6
 
 dev_dependencies:
   flutter_test:

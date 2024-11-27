@@ -1,6 +1,9 @@
+import 'package:came/view/image_picker_view.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
+
+import 'package:get/get.dart';
 
 class CameraPreviewWithSwitch extends StatefulWidget {
   @override
@@ -109,12 +112,16 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
             ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(onPressed: (() {
+        Get.to(ImagePickerView());
+        print("Clicked");
+      })),
     );
   }
 }
 
 void main() {
-  runApp(MaterialApp(
+  runApp(GetMaterialApp(
     home: CameraPreviewWithSwitch(),
   ));
 }
