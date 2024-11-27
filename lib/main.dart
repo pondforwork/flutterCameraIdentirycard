@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:came/view/image_picker_view.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -17,6 +19,10 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
   bool _isCameraInitialized = false;
   int _currentCameraIndex = 0;
   File? _imageFile;
+
+  List<File> _capturedImages = [];
+  Timer? _captureTimer;
+  int _captureCount = 0;
 
   @override
   void initState() {
@@ -68,6 +74,30 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
     }
   }
 
+  Future<void> _captureImageContinuously() async {
+    _captureCount = 0;
+    _capturedImages.clear();
+
+    for (int i = 0; i < 5; i++) {
+      try {
+        final image = await _cameraController.takePicture();
+        print("Capture ${_captureCount + 1}");
+        setState(() {
+          _capturedImages.add(File(image.path));
+
+          _captureCount++;
+        });
+        await Future.delayed(
+            Duration(milliseconds: 250)); // Wait 0.2s before next capture
+      } catch (e) {
+        print("Error capturing image: $e");
+        break; // Stop capturing if an error occurs
+      }
+    }
+
+    print("Captured $_captureCount images.");
+  }
+
   @override
   void dispose() {
     _cameraController.dispose();
@@ -98,6 +128,13 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
             child: ElevatedButton(
               onPressed: _captureImage,
               child: Text("Capture Image"),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: _captureImageContinuously,
+              child: Text("Capture Continously"),
             ),
           ),
           if (_imageFile != null)
