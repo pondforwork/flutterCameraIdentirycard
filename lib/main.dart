@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'dart:io';
 
 class CameraPreviewWithSwitch extends StatefulWidget {
   @override
@@ -12,6 +13,7 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
   late List<CameraDescription> _cameras;
   bool _isCameraInitialized = false;
   int _currentCameraIndex = 0;
+  File? _imageFile;
 
   @override
   void initState() {
@@ -52,6 +54,17 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
     }
   }
 
+  Future<void> _captureImage() async {
+    try {
+      final image = await _cameraController.takePicture();
+      setState(() {
+        _imageFile = File(image.path);
+      });
+    } catch (e) {
+      print("Error capturing image: $e");
+    }
+  }
+
   @override
   void dispose() {
     _cameraController.dispose();
@@ -77,6 +90,23 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
               child: Text("Switch Camera"),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: _captureImage,
+              child: Text("Capture Image"),
+            ),
+          ),
+          if (_imageFile != null)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Image.file(
+                _imageFile!,
+                height: 200,
+                width: 200,
+                fit: BoxFit.cover,
+              ),
+            ),
         ],
       ),
     );
