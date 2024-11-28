@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:came/Class/image_sharpness_calculate.dart';
+import 'package:came/Controller/tflite_controller.dart';
 import 'package:came/view/image_picker_view.dart';
 import 'package:came/view/live_id_card_detection_view.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ class CameraPreviewWithSwitch extends StatefulWidget {
 }
 
 class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
+  TfliteController tfliteController = Get.put(TfliteController());
   late CameraController _cameraController;
   late List<CameraDescription> _cameras;
   bool _isCameraInitialized = false;
@@ -67,6 +69,10 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
 
   void _goToCardDetect() {
     Get.to(IDCardDetectionPage());
+  }
+
+  void _loadModel() {
+    tfliteController.loadModel();
   }
 
   Future<void> _captureImage() async {
@@ -144,12 +150,23 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
               ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _captureImage,
-              child: Text("Capture Image"),
-            ),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: _captureImage,
+                  child: Text("Capture Image"),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: _loadModel,
+                  child: Text("LoadModel"),
+                ),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
