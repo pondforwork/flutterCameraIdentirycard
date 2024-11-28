@@ -1,3 +1,4 @@
+import 'package:came/Class/tflite_model.dart';
 import 'package:came/Controller/tflite_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart'; // Import the camera package
@@ -12,7 +13,10 @@ class TfCamera extends StatefulWidget {
 }
 
 class _TfCameraState extends State<TfCamera> {
-  TfliteController tfliteController = Get.put(TfliteController());
+  // TfliteController tfliteController = Get.put(TfliteController());
+
+  TFLiteModel tfliteController = TFLiteModel();
+
   bool _isCameraInitialized = false;
   late CameraController
       _cameraController; // Camera controller to control the camera
@@ -22,6 +26,7 @@ class _TfCameraState extends State<TfCamera> {
   void initState() {
     super.initState();
     _initializeCamera(); // Initialize camera when the widget is created
+    // tfliteController.loadModel();
     tfliteController.loadModel();
   }
 
@@ -89,13 +94,14 @@ class _TfCameraState extends State<TfCamera> {
             img.Image? image = img.decodeImage(await imageFile.readAsBytes());
             if (image != null) {
               // Preprocess the image to match model input
-              var inputTensor = await tfliteController.preprocessImage(image);
+
+              await tfliteController.processImage(imageFile.path);
 
               // Run the model with the preprocessed image
-              var result = await tfliteController.runModel(inputTensor);
+              // var result = await tfliteController.runModel(inputTensor);
 
               // Print the result or process it further
-              print('Model result: $result');
+              // print('Model result: $result');
             }
           } catch (e) {
             print('Error capturing image: $e');

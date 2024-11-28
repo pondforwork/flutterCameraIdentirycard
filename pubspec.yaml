@@ -25,4 +25,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/ssd_mobilenet.tflite
+    - assets/model.tflite
     - assets/labels.txt

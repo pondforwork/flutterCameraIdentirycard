@@ -42,12 +42,8 @@ class ImageSharpnessCalculate {
       }
     }
 
-    // mean ~/= count;
-    // double variance = ((sumSquares ~/ count) - (mean * mean)) as double;
-
     mean ~/= count;
-    double variance = (sumSquares / count) - (mean * mean).toDouble();
-
+    double variance = ((sumSquares ~/ count) - (mean * mean)) as double;
     return variance.toDouble();
   }
 
