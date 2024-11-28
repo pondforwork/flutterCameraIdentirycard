@@ -77,7 +77,7 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
   }
 
   void _goToTfView() {
-    Get.to(TensorFlowView());
+    Get.to(TfCamera());
   }
 
   Future<void> _captureImage() async {
