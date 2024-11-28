@@ -26,4 +26,5 @@ flutter:
   assets:
     - assets/ssd_mobilenet.tflite
     - assets/model.tflite
+    - assets/model_unquant.tflite
     - assets/labels.txt

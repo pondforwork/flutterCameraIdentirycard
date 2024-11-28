@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -10,7 +11,7 @@ class TFLiteModel {
   Future<void> loadModel() async {
     try {
       // Load the model file from assets
-      final modelFile = await _loadModelFile('assets/model.tflite');
+      final modelFile = await _loadModelFile('assets/model_unquant.tflite');
 
       // Convert ByteData to Uint8List
       final modelData = modelFile.buffer.asUint8List();
@@ -119,13 +120,23 @@ class TFLiteModel {
 
       _interpreter.run(input, output);
 
+      List<double> softmax(List<double> logits) {
+        double maxLogit =
+            logits.reduce((a, b) => a > b ? a : b); // For numerical stability
+        List<double> exps =
+            logits.map((logit) => exp(logit - maxLogit)).toList();
+        double sumExps = exps.reduce((a, b) => a + b);
+        return exps.map((e) => e / sumExps).toList();
+      }
+
       List<double> predictions = output[0].map((e) => e.toDouble()).toList();
+      List<double> probabilities = softmax(predictions);
 
-// Find the index of the maximum value in the predictions
+// Find the class with the highest probability
       int predictedClass =
-          predictions.indexOf(predictions.reduce((a, b) => a > b ? a : b));
+          probabilities.indexOf(probabilities.reduce((a, b) => a > b ? a : b));
 
-// Print the predicted class
+      print("Probabilities: $probabilities");
       print("Predicted class: $predictedClass");
     } catch (e) {
       print("Error processing image: $e");
