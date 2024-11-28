@@ -4,6 +4,7 @@ import 'package:came/Class/image_sharpness_calculate.dart';
 import 'package:came/Controller/tflite_controller.dart';
 import 'package:came/view/image_picker_view.dart';
 import 'package:came/view/live_id_card_detection_view.dart';
+import 'package:came/view/tensorflow/tf_view.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
@@ -73,6 +74,10 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
 
   void _loadModel() {
     tfliteController.loadModel();
+  }
+
+  void _goToTfView() {
+    Get.to(TensorFlowView());
   }
 
   Future<void> _captureImage() async {
@@ -162,7 +167,7 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
-                  onPressed: _loadModel,
+                  onPressed: _goToTfView,
                   child: Text("LoadModel"),
                 ),
               ),
