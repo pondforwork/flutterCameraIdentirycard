@@ -31,48 +31,6 @@ class TFLiteModel {
     return modelData;
   }
 
-  // Future<int> processImage(String imagePath) async {
-  //   try {
-  //     // Load the image
-  //     File imageFile = File(imagePath);
-  //     img.Image image = img.decodeImage(imageFile.readAsBytesSync())!;
-  //     print("Image loaded successfully.");
-
-  //     // Resize the image to match the model input shape
-  //     int height = 224;
-  //     int width = 224;
-  //     img.Image resizedImage =
-  //         img.copyResize(image, width: width, height: height);
-  //     print("Image resized to $width x $height.");
-
-  //     // Convert the image to a list of integers (Uint8List)
-  //     List<int> imageList = resizedImage.getBytes();
-  //     print("Image converted to Uint8List.");
-
-  //     // Convert the image bytes to a Uint8List
-  //     Uint8List imageData = Uint8List.fromList(imageList);
-
-  //     print(imageList);
-  //     // print(imageData);
-  //     // Run inference
-  //     var output = List.filled(3, 0.0);
-
-  //     _interpreter.run(imageData, output);
-  //     // print("Model inference completed.");
-
-  //     // // Get predicted class (for classification tasks)
-  //     int predictedClass =
-  //         output.indexOf(output.reduce((a, b) => a > b ? a : b));
-  //     print("Predicted class: $predictedClass");
-  //     // return 1;
-
-  //     return predictedClass;
-  //   } catch (e) {
-  //     print("Error processing image: $e");
-  //     return -1; // Return an invalid class if an error occurs
-  //   }
-  // }
-
   Future<void> processImage(String imagePath) async {
     try {
       // Load the image
