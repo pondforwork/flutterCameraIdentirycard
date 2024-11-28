@@ -22,6 +22,7 @@ class _TfCameraState extends State<TfCamera> {
   void initState() {
     super.initState();
     _initializeCamera(); // Initialize camera when the widget is created
+    tfliteController.loadModel();
   }
 
   Future<void> _initializeCamera() async {
@@ -85,13 +86,18 @@ class _TfCameraState extends State<TfCamera> {
             final XFile imageFile = await _cameraController.takePicture();
             print("Image captured: ${imageFile.path}");
 
-            // Process the image (assuming preprocessImage is your method for preprocessing)
             img.Image? image = img.decodeImage(await imageFile.readAsBytes());
             if (image != null) {
-              // Pass the image to your TfliteController for further processing
-              List<dynamic> processedImage =
+              // Preprocess the image to match model input
+              List<double> inputTensor =
                   await tfliteController.preprocessImage(image);
-              print('Processed image: $processedImage');
+
+              // Run the model with the preprocessed image
+              List<double> result =
+                  await tfliteController.runModel(inputTensor);
+
+              // Print the result or process it further
+              print('Model result: $result');
             }
           } catch (e) {
             print('Error capturing image: $e');

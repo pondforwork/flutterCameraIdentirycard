@@ -5,55 +5,6 @@ import 'package:image/image.dart' as img;
 class TfliteController extends GetxController {
   late Interpreter interpreter;
 
-  //  double laplacianVariance(Image image) {
-  //   // Convert image to grayscale
-  //   Image grayImage = grayscale(image);
-
-  //   // Initialize Laplacian matrix
-  //   List<List<int>> laplacianImage = List.generate(
-  //       grayImage.height, (_) => List<int>.filled(grayImage.width, 0));
-
-  //   // Apply Laplacian filter to detect edges
-  //   int width = grayImage.width;
-  //   int height = grayImage.height;
-
-  //   for (int y = 1; y < height - 1; y++) {
-  //     for (int x = 1; x < width - 1; x++) {
-  //       int sum = 0;
-  //       for (int ky = -1; ky <= 1; ky++) {
-  //         for (int kx = -1; kx <= 1; kx++) {
-  //           int pixel = grayImage.getPixel(x + kx, y + ky);
-  //           int grayValue = getLuminance(pixel); // Grayscale intensity of pixel
-  //           sum += grayValue *
-  //               [-1, -1, -1, -1, 8, -1, -1, -1, -1][(ky + 1) * 3 + (kx + 1)];
-  //         }
-  //       }
-  //       laplacianImage[y][x] = sum;
-  //     }
-  //   }
-
-  //   // Calculate variance of Laplacian
-  //   int mean = 0;
-  //   int count = 0;
-  //   int sumSquares = 0;
-  //   for (int y = 1; y < height - 1; y++) {
-  //     for (int x = 1; x < width - 1; x++) {
-  //       int lapVal = laplacianImage[y][x];
-  //       mean += lapVal;
-  //       sumSquares += lapVal * lapVal;
-  //       count++;
-  //     }
-  //   }
-
-  //   // mean ~/= count;
-  //   // double variance = ((sumSquares ~/ count) - (mean * mean)) as double;
-
-  //   mean ~/= count;
-  //   double variance = (sumSquares / count) - (mean * mean).toDouble();
-
-  //   return variance.toDouble();
-  // }
-
   Future<void> loadModel() async {
     try {
       interpreter = await Interpreter.fromAsset('assets/ssd_mobilenet.tflite');
@@ -63,31 +14,49 @@ class TfliteController extends GetxController {
     }
   }
 
-  Future<List> preprocessImage(img.Image image) async {
-    // Resize image to the required input size (e.g., 300x300)
+  Future<List<double>> preprocessImage(img.Image image) async {
+    // Resize the image to the required input size (e.g., 300x300)
     img.Image resizedImage = img.copyResize(image, width: 300, height: 300);
 
-    // Normalize pixel values to [0, 1] range
+    // Normalize the pixel values to [0, 1]
     List<double> input = [];
-    for (int i = 0; i < resizedImage.width; i++) {
-      for (int j = 0; j < resizedImage.height; j++) {
-        int pixel = resizedImage.getPixel(i, j);
 
-        // Extract RGB components from the pixel value
+    // Loop through the resized image and normalize each pixel
+    for (int y = 0; y < resizedImage.height; y++) {
+      for (int x = 0; x < resizedImage.width; x++) {
+        int pixel = resizedImage.getPixel(x, y);
+
+        // Extract RGB values from the pixel
         int r = img.getRed(pixel);
         int g = img.getGreen(pixel);
         int b = img.getBlue(pixel);
 
-        // Normalize and add the RGB values to the input list
-        input.add(r / 255.0);
-        input.add(g / 255.0);
-        input.add(b / 255.0);
+        // Normalize RGB values and add them to the input list
+        input.add(r / 255.0); // Normalize red
+        input.add(g / 255.0); // Normalize green
+        input.add(b / 255.0); // Normalize blue
       }
     }
 
-    // The input tensor should have the shape [1, 300, 300, 3]
-    // Flatten the input to [1, 300, 300, 3] format
-    var inputTensor = input.reshape([1, 300, 300, 3]);
-    return inputTensor;
+    return input; // Return the flattened input tensor
+  }
+
+  // Run the model with the input tensor
+  Future<List<double>> runModel(List<double> input) async {
+    // Prepare an output buffer to hold the results
+    var output =
+        List.filled(10, 0.0); // Adjust based on your model's output size
+
+    // Run the model with the input and output buffer
+    interpreter.run(input, output);
+    // Return the output
+    return output;
+  }
+
+  // Example method to use preprocessing and model inference
+  Future<List<double>> predict(img.Image image) async {
+    List<double> inputTensor = await preprocessImage(image);
+    List<double> result = await runModel(inputTensor);
+    return result;
   }
 }
