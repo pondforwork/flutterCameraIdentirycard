@@ -89,12 +89,10 @@ class _TfCameraState extends State<TfCamera> {
             img.Image? image = img.decodeImage(await imageFile.readAsBytes());
             if (image != null) {
               // Preprocess the image to match model input
-              List<double> inputTensor =
-                  await tfliteController.preprocessImage(image);
+              var inputTensor = await tfliteController.preprocessImage(image);
 
               // Run the model with the preprocessed image
-              List<double> result =
-                  await tfliteController.runModel(inputTensor);
+              var result = await tfliteController.runModel(inputTensor);
 
               // Print the result or process it further
               print('Model result: $result');

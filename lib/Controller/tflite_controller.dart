@@ -14,35 +14,54 @@ class TfliteController extends GetxController {
     }
   }
 
-  Future<List<double>> preprocessImage(img.Image image) async {
-    // Resize the image to the required input size (e.g., 300x300)
+  // Future<List<double>> preprocessImage(img.Image image) async {
+  //   img.Image resizedImage =
+  //       img.copyResize(image, width: 300, height: 300); // Resize to 300x300
+  //   List<double> input = [];
+  //   for (int y = 0; y < resizedImage.height; y++) {
+  //     for (int x = 0; x < resizedImage.width; x++) {
+  //       int pixel = resizedImage.getPixel(x, y);
+  //       int r = img.getRed(pixel);
+  //       int g = img.getGreen(pixel);
+  //       int b = img.getBlue(pixel);
+  //       input.add(r / 255.0); // Normalize the pixel values
+  //       input.add(g / 255.0);
+  //       input.add(b / 255.0);
+  //     }
+  //   }
+
+  //   // Now return the input as a 4D tensor with shape [1, 300, 300, 3]
+  //   return input;
+  // }
+
+  Future<List<List<List<List<double>>>>> preprocessImage(
+      img.Image image) async {
     img.Image resizedImage = img.copyResize(image, width: 300, height: 300);
 
-    // Normalize the pixel values to [0, 1]
-    List<double> input = [];
+    // Create a 4D tensor with shape [1, 300, 300, 3]
+    List<List<List<List<double>>>> tensor = [
+      List.generate(
+          300, (_) => List.generate(300, (_) => List.generate(3, (_) => 0.0)))
+    ];
 
-    // Loop through the resized image and normalize each pixel
     for (int y = 0; y < resizedImage.height; y++) {
       for (int x = 0; x < resizedImage.width; x++) {
         int pixel = resizedImage.getPixel(x, y);
-
-        // Extract RGB values from the pixel
         int r = img.getRed(pixel);
         int g = img.getGreen(pixel);
         int b = img.getBlue(pixel);
 
-        // Normalize RGB values and add them to the input list
-        input.add(r / 255.0); // Normalize red
-        input.add(g / 255.0); // Normalize green
-        input.add(b / 255.0); // Normalize blue
+        tensor[0][y][x][0] = r / 255.0;
+        tensor[0][y][x][1] = g / 255.0;
+        tensor[0][y][x][2] = b / 255.0;
       }
     }
 
-    return input; // Return the flattened input tensor
+    return tensor;
   }
 
   // Run the model with the input tensor
-  Future<List<double>> runModel(List<double> input) async {
+  Future<List<double>> runModel(List<List<List<List<double>>>> input) async {
     // Prepare an output buffer to hold the results
     var output =
         List.filled(10, 0.0); // Adjust based on your model's output size
@@ -55,8 +74,8 @@ class TfliteController extends GetxController {
 
   // Example method to use preprocessing and model inference
   Future<List<double>> predict(img.Image image) async {
-    List<double> inputTensor = await preprocessImage(image);
-    List<double> result = await runModel(inputTensor);
+    var inputTensor = await preprocessImage(image);
+    var result = await runModel(inputTensor);
     return result;
   }
 }
