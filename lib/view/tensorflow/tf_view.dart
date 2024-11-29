@@ -125,21 +125,15 @@ class _TfCameraState extends State<TfCamera> {
                 print("Image captured: ${imageFile.path}");
 
                 // Decode the image
-                img.Image? image =
-                    img.decodeImage(await imageFile.readAsBytes());
+                // img.Image? image =
+                //     img.decodeImage(await imageFile.readAsBytes());
 
                 // if (image != null) {
                 //   print("Image decoded successfully.");
                 // }
-                if (image != null) {
-                  print("Image decoded successfully.");
+                _processImage(imageFile.path);
 
-                  // Process the image
-                  _processImage(imageFile.path);
-                  // print("Predicted class: $predictedClass");
-                } else {
-                  print("Failed to decode the image.");
-                }
+                // print("Predicted class: $predictedClass");
               } catch (e) {
                 print("Error in camera loop: $e");
               }
