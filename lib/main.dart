@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:came/Class/image_sharpness_calculate.dart';
 import 'package:came/Controller/tflite_controller.dart';
 import 'package:came/view/image_picker_view.dart';
-import 'package:came/view/live_id_card_detection_view.dart';
 import 'package:came/view/tensorflow/tf_view.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -66,10 +65,6 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
         SnackBar(content: Text("No secondary camera available")),
       );
     }
-  }
-
-  void _goToCardDetect() {
-    Get.to(IDCardDetectionPage());
   }
 
   void _loadModel() {
@@ -144,13 +139,6 @@ class _CameraPreviewWithSwitchState extends State<CameraPreviewWithSwitch> {
                 child: ElevatedButton(
                   onPressed: _switchCamera,
                   child: Text("Switch Camera"),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: _goToCardDetect,
-                  child: Text("Go to Detect Card"),
                 ),
               ),
             ],
