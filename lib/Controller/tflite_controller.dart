@@ -7,7 +7,8 @@ class TfliteController extends GetxController {
 
   Future<void> loadModel() async {
     try {
-      interpreter = await Interpreter.fromAsset('assets/ssd_mobilenet.tflite');
+      interpreter =
+          await Interpreter.fromAsset('assets/model_coco_mobile.tflite');
       print('Model loaded successfully');
     } catch (e) {
       print('Failed to load model: $e');

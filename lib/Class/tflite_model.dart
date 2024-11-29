@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:io';
@@ -11,7 +12,7 @@ class TFLiteModel {
   Future<void> loadModel() async {
     try {
       // Load the model file from assets
-      final modelFile = await _loadModelFile('assets/model_unquant.tflite');
+      final modelFile = await _loadModelFile('assets/model_coco_mobile.tflite');
 
       // Convert ByteData to Uint8List
       final modelData = modelFile.buffer.asUint8List();
@@ -31,7 +32,78 @@ class TFLiteModel {
     return modelData;
   }
 
-  Future<void> processImage(String imagePath) async {
+//   Future<void> processImage(String imagePath) async {
+//     try {
+//       // Load the image
+//       File imageFile = File(imagePath);
+//       img.Image image = img.decodeImage(imageFile.readAsBytesSync())!;
+//       print("Image loaded successfully.");
+
+//       // Resize the image to match the model input shape
+//       int height = 224;
+//       int width = 224;
+//       img.Image resizedImage =
+//           img.copyResize(image, width: width, height: height);
+//       print("Image resized to $width x $height.");
+
+//       // Ensure the image is in RGB format (model expects 3 channels)
+//       // img.Image rgbImage = img.RgbaImage.from(resizedImage);
+
+//       // Convert the image to a list of integers (Uint8List)
+//       List<int> imageList = resizedImage.getBytes();
+//       print("Image converted to Uint8List.");
+
+//       // Convert the image bytes to a Uint8List
+//       Uint8List imageData = Uint8List.fromList(imageList);
+
+//       // Reshape the data to match the model input shape [1, 224, 224, 3]
+//       // Model expects [1, height, width, 3]
+//       List<List<List<List<int>>>> input = List.generate(
+//         1,
+//         (i) => List.generate(
+//           height,
+//           (j) => List.generate(
+//             width,
+//             (k) => List.generate(3, (l) => imageData[(j * width + k) * 3 + l]),
+//           ),
+//         ),
+//       );
+
+//       // Run inference
+//       // var output = List.filled(
+//       //     3, 0.0);
+
+//       // var output = List.generate(1, (_) => List.filled(3, 0.0));
+//       var output = List<List<num>>.generate(
+//           1, (_) => List.filled(2, 0.0, growable: false));
+
+//       _interpreter.run(input, output);
+
+//       List<double> softmax(List<double> logits) {
+//         double maxLogit =
+//             logits.reduce((a, b) => a > b ? a : b); // For numerical stability
+//         List<double> exps =
+//             logits.map((logit) => exp(logit - maxLogit)).toList();
+//         double sumExps = exps.reduce((a, b) => a + b);
+//         return exps.map((e) => e / sumExps).toList();
+//       }
+
+//       List<double> predictions = output[0].map((e) => e.toDouble()).toList();
+//       List<double> probabilities = softmax(predictions);
+
+// // Find the class with the highest probability
+//       int predictedClass =
+//           probabilities.indexOf(probabilities.reduce((a, b) => a > b ? a : b));
+
+//       print("Probabilities: $probabilities");
+//       print("Predicted class: $predictedClass");
+//     } catch (e) {
+//       print("Error processing image: $e");
+//       //return -1;
+//     }
+//   }
+
+  Future<int> processImage(String imagePath) async {
     try {
       // Load the image
       File imageFile = File(imagePath);
@@ -45,9 +117,6 @@ class TFLiteModel {
           img.copyResize(image, width: width, height: height);
       print("Image resized to $width x $height.");
 
-      // Ensure the image is in RGB format (model expects 3 channels)
-      // img.Image rgbImage = img.RgbaImage.from(resizedImage);
-
       // Convert the image to a list of integers (Uint8List)
       List<int> imageList = resizedImage.getBytes();
       print("Image converted to Uint8List.");
@@ -56,7 +125,6 @@ class TFLiteModel {
       Uint8List imageData = Uint8List.fromList(imageList);
 
       // Reshape the data to match the model input shape [1, 224, 224, 3]
-      // Model expects [1, height, width, 3]
       List<List<List<List<int>>>> input = List.generate(
         1,
         (i) => List.generate(
@@ -69,12 +137,8 @@ class TFLiteModel {
       );
 
       // Run inference
-      // var output = List.filled(
-      //     3, 0.0);
-
-      // var output = List.generate(1, (_) => List.filled(3, 0.0));
       var output = List<List<num>>.generate(
-          1, (_) => List.filled(3, 0.0, growable: false));
+          1, (_) => List.filled(2, 0.0, growable: false));
 
       _interpreter.run(input, output);
 
@@ -90,16 +154,31 @@ class TFLiteModel {
       List<double> predictions = output[0].map((e) => e.toDouble()).toList();
       List<double> probabilities = softmax(predictions);
 
-// Find the class with the highest probability
+      // Find the class with the highest probability
       int predictedClass =
           probabilities.indexOf(probabilities.reduce((a, b) => a > b ? a : b));
 
       print("Probabilities: $probabilities");
       print("Predicted class: $predictedClass");
+
+      // Return the predicted class
+      return predictedClass;
     } catch (e) {
       print("Error processing image: $e");
-      //return -1;
+      // Return a default error class, e.g., -1
+      return -1;
     }
+  }
+
+  void startImageProcessingLoop(String imagePath) {
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+      try {
+        int predictedClass = await processImage(imagePath);
+        print("Predicted Class: $predictedClass");
+      } catch (e) {
+        print("Error during image processing: $e");
+      }
+    });
   }
 
   // Function to get predicted class

@@ -1,8 +1,8 @@
+import 'dart:async';
+
 import 'package:came/Class/tflite_model.dart';
-import 'package:came/Controller/tflite_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart'; // Import the camera package
-import 'package:get/get.dart';
 import 'package:image/image.dart' as img; // Import the image package
 
 class TfCamera extends StatefulWidget {
@@ -13,8 +13,6 @@ class TfCamera extends StatefulWidget {
 }
 
 class _TfCameraState extends State<TfCamera> {
-  // TfliteController tfliteController = Get.put(TfliteController());
-
   TFLiteModel tfliteController = TFLiteModel();
 
   bool _isCameraInitialized = false;
@@ -22,12 +20,13 @@ class _TfCameraState extends State<TfCamera> {
       _cameraController; // Camera controller to control the camera
   late List<CameraDescription> _cameras; // List of available cameras
 
+  int? _classificationResult; // Store the classification result
+
   @override
   void initState() {
     super.initState();
     _initializeCamera(); // Initialize camera when the widget is created
-    // tfliteController.loadModel();
-    tfliteController.loadModel();
+    tfliteController.loadModel(); // Load the TFLite model
   }
 
   Future<void> _initializeCamera() async {
@@ -65,6 +64,13 @@ class _TfCameraState extends State<TfCamera> {
     super.dispose();
   }
 
+  Future<void> _processImage(String imagePath) async {
+    int result = await tfliteController.processImage(imagePath);
+    setState(() {
+      _classificationResult = result; // Update the classification result
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,6 +84,21 @@ class _TfCameraState extends State<TfCamera> {
             CameraPreview(_cameraController)
           else
             const Center(child: CircularProgressIndicator()),
+          if (_classificationResult != null)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                color: Colors.black54,
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Prediction: $_classificationResult',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -85,24 +106,44 @@ class _TfCameraState extends State<TfCamera> {
           // Take a picture when the button is pressed
           try {
             // Ensure the camera is initialized
-            await _cameraController.initialize();
+            if (!_isCameraInitialized) return;
 
             // Capture the picture
-            final XFile imageFile = await _cameraController.takePicture();
-            print("Image captured: ${imageFile.path}");
+            // final XFile imageFile = await _cameraController.takePicture();
+            // print("Image captured: ${imageFile.path}");
 
-            img.Image? image = img.decodeImage(await imageFile.readAsBytes());
-            if (image != null) {
-              // Preprocess the image to match model input
+            // img.Image? image = img.decodeImage(await imageFile.readAsBytes());
+            // if (image != null) {
+            //   // Process the image
+            //   await _processImage(imageFile.path);
+            // }
 
-              await tfliteController.processImage(imageFile.path);
+            Timer.periodic(Duration(seconds: 1), (timer) async {
+              try {
+                // Capture the picture
+                final XFile imageFile = await _cameraController.takePicture();
+                print("Image captured: ${imageFile.path}");
 
-              // Run the model with the preprocessed image
-              // var result = await tfliteController.runModel(inputTensor);
+                // Decode the image
+                img.Image? image =
+                    img.decodeImage(await imageFile.readAsBytes());
 
-              // Print the result or process it further
-              // print('Model result: $result');
-            }
+                // if (image != null) {
+                //   print("Image decoded successfully.");
+                // }
+                if (image != null) {
+                  print("Image decoded successfully.");
+
+                  // Process the image
+                  _processImage(imageFile.path);
+                  // print("Predicted class: $predictedClass");
+                } else {
+                  print("Failed to decode the image.");
+                }
+              } catch (e) {
+                print("Error in camera loop: $e");
+              }
+            });
           } catch (e) {
             print('Error capturing image: $e');
           }
